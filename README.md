@@ -11,9 +11,9 @@
 
 ## 使用方法
 
-### 🚀 简化版本 (ptl) - 推荐使用
+### 🚀 PTL 工具
 
-最简单的使用方式，命令简短易记：
+简单易用的命令行工具，命令简短易记：
 
 ```bash
 # MD5哈希
@@ -39,7 +39,7 @@ ptl time     # 当前日期时间
 ptl help
 ```
 
-#### 安装简化版本
+#### 安装方法
 
 **方法1: 使用别名 (推荐)**
 ```bash
@@ -56,47 +56,6 @@ sudo bash install.sh
 **方法3: 临时使用**
 ```bash
 python ptl md5 "hello world"
-```
-
-### 交互式版本 (daily_tools.py)
-
-运行交互式版本，通过菜单选择功能：
-
-```bash
-python daily_tools.py
-```
-
-### 完整命令行版本 (tools_cli.py)
-
-直接通过命令行参数使用：
-
-```bash
-# MD5哈希
-python tools_cli.py md5 "hello world"
-
-# URL编码
-python tools_cli.py url-encode "hello world"
-
-# URL解码
-python tools_cli.py url-decode "hello%20world"
-
-# Base64编码
-python tools_cli.py base64-encode "hello world"
-
-# Base64解码
-python tools_cli.py base64-decode "aGVsbG8gd29ybGQ="
-
-# 时间戳转日期时间
-python tools_cli.py ts-to-dt 1640995200
-
-# 日期时间转时间戳
-python tools_cli.py dt-to-ts "2022-01-01 12:00:00"
-
-# 获取当前时间戳
-python tools_cli.py now-ts
-
-# 获取当前日期时间
-python tools_cli.py now-dt
 ```
 
 ## 支持的日期格式
