@@ -12,165 +12,279 @@ import urllib.parse
 import datetime
 import time
 import sys
+from typing import Optional
 
 
-def md5_hash(text):
-    """计算MD5哈希值"""
-    return hashlib.md5(text.encode('utf-8')).hexdigest()
+class HashTools:
+    """哈希工具类"""
+    
+    @staticmethod
+    def md5(text: str) -> str:
+        """计算MD5哈希值"""
+        return hashlib.md5(text.encode('utf-8')).hexdigest()
+    
+    @staticmethod
+    def sha256(text: str) -> str:
+        """计算SHA256哈希值"""
+        return hashlib.sha256(text.encode('utf-8')).hexdigest()
 
 
-def sha256_hash(text):
-    """计算SHA256哈希值"""
-    return hashlib.sha256(text.encode('utf-8')).hexdigest()
+class EncodingTools:
+    """编码工具类"""
+    
+    @staticmethod
+    def url_encode(text: str) -> str:
+        """URL编码"""
+        return urllib.parse.quote(text, safe='')
+    
+    @staticmethod
+    def url_decode(text: str) -> str:
+        """URL解码"""
+        return urllib.parse.unquote(text)
+    
+    @staticmethod
+    def base64_encode(text: str) -> str:
+        """Base64编码"""
+        return base64.b64encode(text.encode('utf-8')).decode('utf-8')
+    
+    @staticmethod
+    def base64_decode(text: str) -> str:
+        """Base64解码"""
+        try:
+            return base64.b64decode(text).decode('utf-8')
+        except Exception as e:
+            return f"解码失败: {str(e)}"
 
 
-def url_encode(text):
-    """URL编码"""
-    return urllib.parse.quote(text, safe='')
+class TimeTools:
+    """时间工具类"""
+    
+    @staticmethod
+    def timestamp_to_datetime(timestamp: str) -> str:
+        """时间戳转换为日期时间格式"""
+        try:
+            # 处理毫秒级时间戳
+            if len(str(int(float(timestamp)))) > 10:
+                timestamp = float(timestamp) / 1000
+            dt = datetime.datetime.fromtimestamp(float(timestamp))
+            return dt.strftime('%Y-%m-%d %H:%M:%S')
+        except Exception as e:
+            return f"转换失败: {str(e)}"
+    
+    @staticmethod
+    def datetime_to_timestamp(datetime_str: str) -> str:
+        """日期时间格式转换为时间戳"""
+        try:
+            formats = [
+                '%Y-%m-%d %H:%M:%S',
+                '%Y-%m-%d',
+                '%Y/%m/%d %H:%M:%S',
+                '%Y/%m/%d'
+            ]
+            
+            for fmt in formats:
+                try:
+                    dt = datetime.datetime.strptime(datetime_str, fmt)
+                    return str(int(dt.timestamp()))
+                except ValueError:
+                    continue
+            
+            return "不支持的日期格式"
+        except Exception as e:
+            return f"转换失败: {str(e)}"
+    
+    @staticmethod
+    def current_timestamp() -> str:
+        """获取当前时间戳"""
+        return str(int(time.time()))
+    
+    @staticmethod
+    def current_datetime() -> str:
+        """获取当前日期时间"""
+        return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
-def url_decode(text):
-    """URL解码"""
-    return urllib.parse.unquote(text)
-
-
-def base64_encode(text):
-    """Base64编码"""
-    return base64.b64encode(text.encode('utf-8')).decode('utf-8')
-
-
-def base64_decode(text):
-    """Base64解码"""
-    try:
-        return base64.b64decode(text).decode('utf-8')
-    except Exception as e:
-        return f"解码失败: {str(e)}"
-
-
-def timestamp_to_datetime(timestamp):
-    """时间戳转换为日期时间格式"""
-    try:
-        if len(str(int(float(timestamp)))) > 10:
-            timestamp = float(timestamp) / 1000
-        dt = datetime.datetime.fromtimestamp(float(timestamp))
-        return dt.strftime('%Y-%m-%d %H:%M:%S')
-    except Exception as e:
-        return f"转换失败: {str(e)}"
-
-
-def datetime_to_timestamp(datetime_str):
-    """日期时间格式转换为时间戳"""
-    try:
-        formats = [
-            '%Y-%m-%d %H:%M:%S',
-            '%Y-%m-%d',
-            '%Y/%m/%d %H:%M:%S',
-            '%Y/%m/%d'
-        ]
+class PTLTool:
+    """PTL工具主类"""
+    
+    def __init__(self):
+        self.hash_tools = HashTools()
+        self.encoding_tools = EncodingTools()
+        self.time_tools = TimeTools()
+        self.parser = self._create_parser()
+    
+    def _create_parser(self) -> argparse.ArgumentParser:
+        """创建命令行参数解析器"""
+        parser = argparse.ArgumentParser(
+            prog='ptl',
+            description='PTL - Python Tools Library 简化的日常工具集合',
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            epilog=self._get_examples()
+        )
         
-        for fmt in formats:
-            try:
-                dt = datetime.datetime.strptime(datetime_str, fmt)
-                return str(int(dt.timestamp()))
-            except ValueError:
-                continue
+        subparsers = parser.add_subparsers(dest='command', help='可用命令')
         
-        return "不支持的日期格式"
-    except Exception as e:
-        return f"转换失败: {str(e)}"
-
-
-def show_help():
-    """显示帮助信息"""
-    help_text = """
-PTL - Python Tools Library
-
-用法:
-  ptl <command> [input]
-
-命令:
-  md5 <text>              计算MD5哈希值
-  sha256 <text>           计算SHA256哈希值
-  url <text>              URL编码
-  unurl <text>            URL解码
-  b64 <text>              Base64编码
-  unb64 <text>            Base64解码
-  ts2dt <timestamp>       时间戳转日期时间
-  dt2ts <datetime>        日期时间转时间戳
-  now                     当前时间戳
-  time                    当前日期时间
-  help, -h, --help        显示此帮助信息
-
+        # 哈希命令
+        hash_parser = subparsers.add_parser('md5', help='计算MD5哈希值')
+        hash_parser.add_argument('text', nargs='*', help='要计算哈希的文本')
+        
+        sha256_parser = subparsers.add_parser('sha256', help='计算SHA256哈希值')
+        sha256_parser.add_argument('text', nargs='*', help='要计算哈希的文本')
+        
+        # 编码命令
+        url_parser = subparsers.add_parser('url', help='URL编码')
+        url_parser.add_argument('text', nargs='*', help='要编码的文本')
+        
+        unurl_parser = subparsers.add_parser('unurl', help='URL解码')
+        unurl_parser.add_argument('text', nargs='*', help='要解码的文本')
+        
+        b64_parser = subparsers.add_parser('b64', help='Base64编码')
+        b64_parser.add_argument('text', nargs='*', help='要编码的文本')
+        
+        unb64_parser = subparsers.add_parser('unb64', help='Base64解码')
+        unb64_parser.add_argument('text', nargs='*', help='要解码的文本')
+        
+        # 时间命令
+        ts2dt_parser = subparsers.add_parser('ts2dt', help='时间戳转日期时间')
+        ts2dt_parser.add_argument('timestamp', nargs='*', help='时间戳')
+        
+        dt2ts_parser = subparsers.add_parser('dt2ts', help='日期时间转时间戳')
+        dt2ts_parser.add_argument('datetime', nargs='*', help='日期时间字符串')
+        
+        subparsers.add_parser('now', help='获取当前时间戳')
+        subparsers.add_parser('time', help='获取当前日期时间')
+        
+        return parser
+    
+    def _get_examples(self) -> str:
+        """获取使用示例"""
+        return """
 示例:
   ptl md5 "hello world"
   ptl sha256 "hello world"
   ptl url "hello world 中文"
+  ptl unurl "hello%20world"
   ptl b64 "hello world"
+  ptl unb64 "aGVsbG8gd29ybGQ="
   ptl ts2dt 1640995200
   ptl dt2ts "2024-01-01 12:00:00"
   ptl now
-"""
-    print(help_text)
+  ptl time
+        """
+    
+    def _join_args(self, args_list: list) -> str:
+        """合并参数列表为字符串"""
+        return ' '.join(args_list) if args_list else ''
+    
+    def run(self, args: Optional[list] = None) -> None:
+        """运行PTL工具"""
+        # 兼容旧的命令行格式
+        if args is None:
+            args = sys.argv[1:]
+        
+        # 处理旧格式的兼容性
+        if args and args[0] in ['help', '-h', '--help']:
+            self.parser.print_help()
+            return
+        
+        try:
+            parsed_args = self.parser.parse_args(args)
+            
+            if not parsed_args.command:
+                self.parser.print_help()
+                return
+            
+            # 执行相应的命令
+            self._execute_command(parsed_args)
+            
+        except SystemExit as e:
+            # argparse会在某些情况下调用sys.exit()
+            if e.code != 0:
+                raise
+    
+    def _execute_command(self, args) -> None:
+        """执行具体的命令"""
+        command = args.command
+        
+        try:
+            if command == 'md5':
+                text = self._join_args(args.text)
+                if not text:
+                    print("错误: md5命令需要输入文本")
+                    return
+                print(self.hash_tools.md5(text))
+                
+            elif command == 'sha256':
+                text = self._join_args(args.text)
+                if not text:
+                    print("错误: sha256命令需要输入文本")
+                    return
+                print(self.hash_tools.sha256(text))
+                
+            elif command == 'url':
+                text = self._join_args(args.text)
+                if not text:
+                    print("错误: url命令需要输入文本")
+                    return
+                print(self.encoding_tools.url_encode(text))
+                
+            elif command == 'unurl':
+                text = self._join_args(args.text)
+                if not text:
+                    print("错误: unurl命令需要输入文本")
+                    return
+                print(self.encoding_tools.url_decode(text))
+                
+            elif command == 'b64':
+                text = self._join_args(args.text)
+                if not text:
+                    print("错误: b64命令需要输入文本")
+                    return
+                print(self.encoding_tools.base64_encode(text))
+                
+            elif command == 'unb64':
+                text = self._join_args(args.text)
+                if not text:
+                    print("错误: unb64命令需要输入文本")
+                    return
+                print(self.encoding_tools.base64_decode(text))
+                
+            elif command == 'ts2dt':
+                timestamp = self._join_args(args.timestamp)
+                if not timestamp:
+                    print("错误: ts2dt命令需要输入时间戳")
+                    return
+                print(self.time_tools.timestamp_to_datetime(timestamp))
+                
+            elif command == 'dt2ts':
+                datetime_str = self._join_args(args.datetime)
+                if not datetime_str:
+                    print("错误: dt2ts命令需要输入日期时间")
+                    return
+                print(self.time_tools.datetime_to_timestamp(datetime_str))
+                
+            elif command == 'now':
+                print(self.time_tools.current_timestamp())
+                
+            elif command == 'time':
+                print(self.time_tools.current_datetime())
+                
+        except Exception as e:
+            print(f"执行命令时出错: {str(e)}")
 
 
 def main():
     """主函数"""
-    if len(sys.argv) < 2:
-        show_help()
-        return
-    
-    command = sys.argv[1].lower()
-    
-    # 帮助命令
-    if command in ['help', '-h', '--help']:
-        show_help()
-        return
-    
-    # 不需要输入的命令
-    if command == 'now':
-        print(int(time.time()))
-        return
-    elif command == 'time':
-        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        return
-    
-    # 需要输入的命令
-    if len(sys.argv) < 3:
-        print(f"错误: 命令 '{command}' 需要输入参数")
-        print("使用 'ptl help' 查看帮助信息")
-        return
-    
-    # 合并所有参数作为输入文本（支持包含空格的参数）
-    input_text = ' '.join(sys.argv[2:])
-    
-    # 执行相应命令
-    if command == 'md5':
-        print(md5_hash(input_text))
-    elif command == 'sha256':
-        print(sha256_hash(input_text))
-    elif command == 'url':
-        print(url_encode(input_text))
-    elif command == 'unurl':
-        print(url_decode(input_text))
-    elif command == 'b64':
-        print(base64_encode(input_text))
-    elif command == 'unb64':
-        print(base64_decode(input_text))
-    elif command == 'ts2dt':
-        print(timestamp_to_datetime(input_text))
-    elif command == 'dt2ts':
-        print(datetime_to_timestamp(input_text))
-    else:
-        print(f"错误: 未知命令 '{command}'")
-        print("使用 'ptl help' 查看所有可用命令")
-
-
-if __name__ == "__main__":
     try:
-        main()
+        ptl = PTLTool()
+        ptl.run()
     except KeyboardInterrupt:
         print("\n程序被用户中断")
         sys.exit(0)
     except Exception as e:
         print(f"程序出现错误: {str(e)}")
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

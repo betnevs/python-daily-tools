@@ -40,7 +40,12 @@ ptl now      # 当前时间戳
 ptl time     # 当前日期时间
 
 # 查看帮助
+ptl --help
 ptl help
+
+# 查看特定命令的帮助
+ptl md5 --help
+ptl sha256 --help
 ```
 
 #### 安装方法
@@ -73,6 +78,17 @@ python ptl md5 "hello world"
 
 - 支持秒级时间戳 (10位数字)
 - 支持毫秒级时间戳 (13位数字，自动转换)
+
+## 代码架构
+
+PTL工具采用面向对象的设计，具有良好的模块化结构：
+
+- **PTLTool** - 主工具类，负责命令行解析和调度
+- **HashTools** - 哈希工具类，提供MD5、SHA256等哈希功能
+- **EncodingTools** - 编码工具类，提供URL编码、Base64编码等功能
+- **TimeTools** - 时间工具类，提供时间戳转换等时间相关功能
+
+使用argparse进行命令行参数解析，支持子命令和详细的帮助信息。
 
 ## 依赖
 
