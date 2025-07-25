@@ -24,6 +24,7 @@ def demo():
     
     demos = [
         ("MD5哈希", 'md5 "Hello World 你好世界"'),
+        ("SHA256哈希", 'sha256 "Hello World 你好世界"'),
         ("URL编码", 'url "https://example.com/search?q=hello world"'),
         ("URL解码", 'unurl "https%3A//example.com/search%3Fq%3Dhello%20world"'),
         ("Base64编码", 'b64 "Hello World 你好世界"'),

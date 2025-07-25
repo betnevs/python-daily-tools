@@ -19,6 +19,11 @@ def md5_hash(text):
     return hashlib.md5(text.encode('utf-8')).hexdigest()
 
 
+def sha256_hash(text):
+    """计算SHA256哈希值"""
+    return hashlib.sha256(text.encode('utf-8')).hexdigest()
+
+
 def url_encode(text):
     """URL编码"""
     return urllib.parse.quote(text, safe='')
@@ -85,6 +90,7 @@ PTL - Python Tools Library
 
 命令:
   md5 <text>              计算MD5哈希值
+  sha256 <text>           计算SHA256哈希值
   url <text>              URL编码
   unurl <text>            URL解码
   b64 <text>              Base64编码
@@ -97,6 +103,7 @@ PTL - Python Tools Library
 
 示例:
   ptl md5 "hello world"
+  ptl sha256 "hello world"
   ptl url "hello world 中文"
   ptl b64 "hello world"
   ptl ts2dt 1640995200
@@ -139,6 +146,8 @@ def main():
     # 执行相应命令
     if command == 'md5':
         print(md5_hash(input_text))
+    elif command == 'sha256':
+        print(sha256_hash(input_text))
     elif command == 'url':
         print(url_encode(input_text))
     elif command == 'unurl':
